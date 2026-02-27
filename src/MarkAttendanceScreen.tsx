@@ -4,42 +4,48 @@ import { Text, Appbar, Button, HelperText } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import API from './api/API.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 
 const MarkAttendanceScreen = ({ navigation, route }: any) => {
   const [attendanceType, setAttendanceType] = useState<string | null>(null);
   const [loading , setLoading] = useState(true)
+  const isFocused = useIsFocused();
 
   // Colors
   const navyBlue = '#1b2142';
   const deepMaroon = '#9a324e';
 
   // Jab StartDay screen se wapas aayein toh status check karein
-  useEffect(() => {
-  const checkStatus = async () => {
-    // AsyncStorage se saved date aur status uthao
-    const savedDate = await AsyncStorage.getItem('attendanceDate');
-    const savedType = await AsyncStorage.getItem('attendanceType');
-    const today = new Date().toISOString().split('T')[0]; // Aaj ki date: 2026-02-27
+ useEffect(() => {
+    const initScreen = async () => {
+      // 1. Pehle check karo storage mein kuch hai ya nahi
+      const savedDate = await AsyncStorage.getItem('attendanceDate');
+      const savedType = await AsyncStorage.getItem('attendanceType');
+      const today = new Date().toISOString().split('T')[0];
 
-    if (savedDate === today) {
-      // Agar date aaj ki hi hai, toh purana status set kar do (Disable buttons)
-      setAttendanceType(savedType);
-    } else {
-      // Agar date purani hai (Raat 12 baje ke baad), toh reset kar do (Enable buttons)
-      setAttendanceType(null);
-      await AsyncStorage.removeItem('attendanceDate');
-      await AsyncStorage.removeItem('attendanceType');
+      if (savedDate === today && savedType) {
+        setAttendanceType(savedType);
+      } else if (savedDate && savedDate !== today) {
+        // Purana data delete karo agar din badal gaya hai
+        await AsyncStorage.removeItem('attendanceDate');
+        await AsyncStorage.removeItem('attendanceType');
+        setAttendanceType(null);
+      }
+
+      // 2. Phir check karo agar abhi StartDay se wapas aaye ho
+      if (route.params?.status === 'marked') {
+        await saveStatusLocally('start');
+        // Status clear karo taake loop na bane
+        navigation.setParams({ status: undefined });
+      }
+      
+      setLoading(false);
+    };
+
+    if (isFocused) {
+      initScreen();
     }
-  };
-
-  checkStatus();
-
-
-
-    if (route.params?.status === 'marked') {
-      setAttendanceType('start');
-    }
-  }, [route.params?.status]);
+  }, [isFocused, route.params?.status]);
 
 
   // Status aur Date dono save karne ka function
