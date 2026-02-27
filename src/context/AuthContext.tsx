@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: any) => {
   const logout = async () => {
     setUser(null);
     setToken(null);
-    await AsyncStorage.clear(); // Poori storage saaf
+    // await AsyncStorage.clear(); // Poori storage saaf
   };
 
   return (
