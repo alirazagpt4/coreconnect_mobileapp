@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView , Alert } from 'react-native';
 import { Text, Appbar, Divider, List } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -7,12 +7,30 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const ActivityScreen = ({ navigation }: any) => {
   const { logout, user } = useAuth();
 
+  const handleLogoutPress = () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      { 
+        text: "Yes, Logout", 
+        onPress: () => logout(), // Aapka actual logout function yahan call hoga
+        style: "destructive" 
+      }
+    ]
+  );
+};
+
   return (
     <View style={styles.container}>
       {/* Simple Header */}
       <Appbar.Header style={{ backgroundColor: '#1b2142' }}>
         <Appbar.Content title="Activity" titleStyle={{ color: 'white' }} />
-        <Appbar.Action icon="logout" color="white" onPress={logout} />
+        <Appbar.Action icon="logout" color="white" onPress={handleLogoutPress} />
       </Appbar.Header>
 
       <ScrollView style={styles.content}>

@@ -3,9 +3,10 @@ import { View, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Text, Appbar, Button, HelperText } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import API from './api/API.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const MarkAttendanceScreen = ({ navigation, route }: any) => {
-  const [isAttendanceMarked, setIsAttendanceMarked] = useState(false);
+  const [attendanceType, setAttendanceType] = useState<string | null>(null);
   const [loading , setLoading] = useState(true)
 
   // Colors
@@ -14,11 +15,40 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
 
   // Jab StartDay screen se wapas aayein toh status check karein
   useEffect(() => {
+  const checkStatus = async () => {
+    // AsyncStorage se saved date aur status uthao
+    const savedDate = await AsyncStorage.getItem('attendanceDate');
+    const savedType = await AsyncStorage.getItem('attendanceType');
+    const today = new Date().toISOString().split('T')[0]; // Aaj ki date: 2026-02-27
+
+    if (savedDate === today) {
+      // Agar date aaj ki hi hai, toh purana status set kar do (Disable buttons)
+      setAttendanceType(savedType);
+    } else {
+      // Agar date purani hai (Raat 12 baje ke baad), toh reset kar do (Enable buttons)
+      setAttendanceType(null);
+      await AsyncStorage.removeItem('attendanceDate');
+      await AsyncStorage.removeItem('attendanceType');
+    }
+  };
+
+  checkStatus();
+
+
+
     if (route.params?.status === 'marked') {
-      setIsAttendanceMarked(true);
+      setAttendanceType('start');
     }
   }, [route.params?.status]);
 
+
+  // Status aur Date dono save karne ka function
+const saveStatusLocally = async (type: string) => {
+  const today = new Date().toISOString().split('T')[0];
+  await AsyncStorage.setItem('attendanceDate', today);
+  await AsyncStorage.setItem('attendanceType', type);
+  setAttendanceType(type);
+};
 
   // Leave API Call Logic
   const submitLeave = async () => {
@@ -39,7 +69,8 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
       });
 
       if (response.data.success) {
-        setIsAttendanceMarked(true);
+        // setAttendanceType('leave');
+        await saveStatusLocally('leave');
         Alert.alert("Success", "Your leave has been marked for today.");
       } else {
         Alert.alert("Error", response.data.message || "Failed to mark leave");
@@ -75,14 +106,14 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
 
       <ScrollView contentContainerStyle={styles.content}>
         
-        {isAttendanceMarked && (
-          <View style={styles.statusBox}>
-            <Icon name="check-circle" size={24} color={navyBlue} />
-            <Text style={[styles.statusText, { color: navyBlue }]}>
-                Attendance already marked for today
-            </Text>
-          </View>
-        )}
+       {attendanceType && (
+  <View style={styles.statusBox}>
+    <Icon name="check-circle" size={24} color={navyBlue} />
+    <Text style={[styles.statusText, { color: navyBlue }]}>
+      {attendanceType === 'leave' ? "You are on leave today" : "Your day has been started"}
+    </Text>
+  </View>
+)}
 
         <Text style={styles.label}>Select Attendance Action</Text>
 
@@ -90,15 +121,15 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
           mode="outlined"
           icon="clock-check"
           onPress={() => navigation.navigate('StartDay')}
-          disabled={isAttendanceMarked}
-          style={[styles.button, !isAttendanceMarked && { borderColor: navyBlue }]}
-          textColor={isAttendanceMarked ? '#bdc3c7' : navyBlue}
+          disabled={!!attendanceType}
+          style={[styles.button, !attendanceType && { borderColor: navyBlue }]}
+          textColor={attendanceType ? '#bdc3c7' : navyBlue}
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}
         >
           Start Day
         </Button>
-        <HelperText type="info" visible={!isAttendanceMarked}>
+        <HelperText type="info" visible={!attendanceType}>
           Mark your entry with photo and location.
         </HelperText>
 
@@ -108,15 +139,15 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
           mode="outlined"
           icon="calendar-remove"
           onPress={handleTakeLeave}
-          disabled={isAttendanceMarked}
-          style={[styles.button, !isAttendanceMarked && { borderColor: deepMaroon }]}
-          textColor={isAttendanceMarked ? '#bdc3c7' : deepMaroon}
+          disabled={!!attendanceType}
+          style={[styles.button, !attendanceType && { borderColor: deepMaroon }]}
+          textColor={attendanceType ? '#bdc3c7' : deepMaroon}
           contentStyle={styles.buttonContent}
           labelStyle={styles.buttonLabel}
         >
           Take Leave
         </Button>
-        <HelperText type="info" visible={!isAttendanceMarked}>
+        <HelperText type="info" visible={!attendanceType}>
           Request for a day off.
         </HelperText>
 
