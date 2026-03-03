@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView , Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Text, Appbar, Divider, List } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -8,22 +8,22 @@ const ActivityScreen = ({ navigation }: any) => {
   const { logout, user } = useAuth();
 
   const handleLogoutPress = () => {
-  Alert.alert(
-    "Logout",
-    "Are you sure you want to logout?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel"
-      },
-      { 
-        text: "Yes, Logout", 
-        onPress: () => logout(), // Aapka actual logout function yahan call hoga
-        style: "destructive" 
-      }
-    ]
-  );
-};
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Yes, Logout",
+          onPress: () => logout(), // Aapka actual logout function yahan call hoga
+          style: "destructive"
+        }
+      ]
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ const ActivityScreen = ({ navigation }: any) => {
       <ScrollView style={styles.content}>
         {/* User Greeting Section */}
         <View style={styles.userSection}>
-          <Text style={styles.welcomeText}>Hello, {user?.name || 'User'}</Text>
+          <Text style={styles.welcomeText}>Hello, {user?.fullname || 'User'}</Text>
           <Text style={styles.infoText}>{user?.designation} • {user?.city}</Text>
         </View>
 
@@ -48,11 +48,11 @@ const ActivityScreen = ({ navigation }: any) => {
           titleStyle={styles.listTitle}
           left={props => <List.Icon {...props} icon="cart-plus" color="#2ecc71" />}
           right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
-          onPress={() => console.log('Sale Clicked')}
+          onPress={() => navigation.navigate('CreateSale')}
           style={styles.listItem}
         />
         <Divider />
-        
+
         <List.Item
           title="Mark Attendance"
           titleStyle={styles.listTitle}

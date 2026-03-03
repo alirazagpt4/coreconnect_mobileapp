@@ -9,6 +9,7 @@ import LoginScreen from './src/LoginScreen';
 import ActivityScreen from './src/ActivityScreen';
 import MarkAttendanceScreen from './src/MarkAttendanceScreen';
 import StartDayScreen from './src/StartDayScreen';
+import CreateSaleScreen from './src/CreateSaleScreen';
 
 const Stack = createStackNavigator();
 
@@ -31,6 +32,7 @@ const NavigationTree = () => {
         <Stack.Screen name="Activity" component={ActivityScreen} />
         <Stack.Screen name="MarkAttendance" component={MarkAttendanceScreen} />
         <Stack.Screen name="StartDay" component={StartDayScreen} />
+        <Stack.Screen name="CreateSale" component={CreateSaleScreen} />
         </>
       )}
     </Stack.Navigator>
