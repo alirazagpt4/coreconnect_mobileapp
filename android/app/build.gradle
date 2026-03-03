@@ -75,6 +75,12 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.coreconnectnew"
+
+   aaptOptions {
+        cruncherEnabled = false
+        useNewCruncher = false
+    }
+
     defaultConfig {
         applicationId "com.coreconnectnew"
         minSdkVersion rootProject.ext.minSdkVersion
