@@ -152,132 +152,267 @@ const CreateSaleScreen = ({ navigation }: any) => {
 
     return (
         <View style={styles.container}>
-            {/* Header with Safe Chaining */}
-            <Appbar.Header style={{ backgroundColor: '#1b2142' }}>
+            <Appbar.Header style={styles.header}>
                 <Appbar.BackAction color="white" onPress={() => navigation.goBack()} />
                 <Appbar.Content
-                    // Fullname check karein, agar null hai toh name dikhayein
                     title={
                         <View>
-                            {/* Title: User Name */}
-                            <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
-                                {profile?.fullname || profile?.name || "Loading..."}
-                            </Text>
-
-                            {/* Subtitle: Store Name (Custom rendered) */}
-                            {profile?.assigned_stores?.length > 0 && (
-                                <Text style={{ color: '#bbc7c5ff', fontSize: 12, fontWeight: '500' }}>
-                                    Store: {profile.assigned_stores[0].store_name}
-                                </Text>
-                            )}
+                            <Text style={styles.headerTitle}>{profile?.fullname || "Ayesha"}</Text>
+                            <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Store"}</Text>
                         </View>
                     }
                 />
-
             </Appbar.Header>
 
-            <ScrollView style={styles.content}>
-                <Text style={styles.sectionTitle}> ADD NEW ITEM</Text>
+            {/* ScrollView flex: 1 rahega lekin content container ko tight rakhenge */}
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
+                <Text style={styles.sectionTitle}>📦 ADD NEW ITEM</Text>
+
                 <Card style={styles.formCard}>
-                    <Text style={styles.label}>Category</Text>
-                    <Dropdown
-                        style={styles.dropdown}
-                        data={categories}
-                        labelField="category_name" // Aapke console log ke mutabiq
-                        valueField="id"
-                        placeholder="Select Category"
-                        value={selectedCat}
-                        onChange={item => handleCategoryChange(item.id)}
-                    />
+                    <View style={styles.row}>
+                        <Dropdown
+                            style={[styles.dropdown, { flex: 1, marginRight: 5 }]}
+                            placeholderStyle={styles.dropdownPlaceholder}
+                            selectedTextStyle={styles.dropdownSelectedText}
+                            // --- YE DO LINES ADD KAREIN ---
+                            itemTextStyle={styles.dropdownItemText}
+                            containerStyle={styles.dropdownContainer}
+                            activeColor='#b5b5b6ff'
+                            data={categories}
+                            labelField="category_name"
+                            valueField="id"
+                            placeholder="Category"
+                            value={selectedCat}
+                            onChange={item => handleCategoryChange(item.id)}
+                        />
+                        <Dropdown
+                            style={[styles.dropdown, { flex: 1, marginRight: 5 }]}
+                            placeholderStyle={styles.dropdownPlaceholder}
+                            selectedTextStyle={styles.dropdownSelectedText}
+                            // --- YE DO LINES ADD KAREIN ---
+                            itemTextStyle={styles.dropdownItemText}
+                            containerStyle={styles.dropdownContainer}
+                            activeColor='#b5b5b6ff'
+                            data={subCategories}
+                            labelField="subcategory_name"
+                            valueField="id"
+                            placeholder="Sub-Cat"
+                            value={selectedSubCat}
+                            onChange={item => handleSubCatChange(item.id)}
+                        />
+                    </View>
 
-                    <Text style={styles.label}>Sub-Category</Text>
                     <Dropdown
-                        style={styles.dropdown}
-                        data={subCategories}
-                        labelField="subcategory_name" // Agar sub-cat show na ho toh "subcategory_name" try karein
-                        valueField="id"
-                        placeholder="Select Sub-Cat"
-                        value={selectedSubCat}
-                        onChange={item => handleSubCatChange(item.id)}
-                    />
-
-                    <Text style={styles.label}>Product</Text>
-                    <Dropdown
-                        style={styles.dropdown}
+                        style={[styles.dropdown, { flex: 1, marginRight: 5 }]}
+                        placeholderStyle={styles.dropdownPlaceholder}
+                        selectedTextStyle={styles.dropdownSelectedText}
+                        // --- YE DO LINES ADD KAREIN ---
+                        itemTextStyle={styles.dropdownItemText}
+                        containerStyle={styles.dropdownContainer}
+                        activeColor='#b5b5b6ff'
                         data={products}
-                        labelField="product_name" // Items API mein aksar "item_name" hota hai
+                        labelField="product_name"
                         valueField="id"
                         placeholder="Select Product"
                         value={selectedProduct?.id}
                         onChange={item => setSelectedProduct(item)}
                     />
 
-                    <View style={styles.row}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>Unit Price</Text>
-                            <Text style={styles.priceValue}>PKR {selectedProduct?.price_after_discount || 0}</Text>
+                    <View style={styles.actionRow}>
+                        <Text style={styles.priceValue}>PKR {selectedProduct?.price_after_discount || 0}</Text>
+                        <View style={styles.qtyContainer}>
+                            <TextInput
+                                value={quantity}
+                                onChangeText={setQuantity}
+                                keyboardType="numeric"
+                                style={styles.qtyInput}
+                                placeholder="Qty"
+                                mode="outlined"
+                                dense
+                            />
+                            <Button
+                                mode="contained"
+                                onPress={addToCart}
+                                style={styles.addButton}
+                                labelStyle={styles.addButtonLabel}
+                            >
+                                ADD
+                            </Button>
                         </View>
-                        <TextInput
-                            label="Qty"
-                            value={quantity}
-                            onChangeText={setQuantity}
-                            keyboardType="numeric"
-                            style={styles.qtyInput}
-                            mode="outlined"
-                        />
                     </View>
-
-                    <Button mode="contained" onPress={addToCart} style={styles.addButton}>
-                        + ADD TO LIST
-                    </Button>
                 </Card>
 
-                {/* List showing added items */}
-                <Text style={[styles.sectionTitle, { marginTop: 20 }]}> CURRENT CART ({cart.length})</Text>
-                {cart.map((item, index) => (
-                    <List.Item
-                        key={index}
-                        title={item.product_name}
-                        description={`Qty: ${item.quantity} | Total: ${item.total}`}
-                        right={() => <IconButton icon="delete" onPress={() => {
-                            const nc = [...cart]; nc.splice(index, 1); setCart(nc);
-                        }} />}
-                    />
-                ))}
+                <View style={styles.cartSection}>
+                    <Text style={styles.sectionTitle}>🛒 CURRENT CART ({cart.length})</Text>
+
+                    <View style={styles.cartHeader}>
+                        <Text style={[styles.cartHeaderText, { flex: 2 }]}>ITEM</Text>
+                        <Text style={[styles.cartHeaderText, { flex: 0.5, textAlign: 'center' }]}>QTY</Text>
+                        <Text style={[styles.cartHeaderText, { flex: 1, textAlign: 'right' }]}>TOTAL</Text>
+                        <View style={{ width: 35 }} />
+                    </View>
+
+                    <View style={styles.cartList}>
+                        {cart.length === 0 ? (
+                            <Text style={styles.emptyText}>Cart is empty</Text>
+                        ) : (
+                            cart.map((item, index) => (
+                                <View key={index} style={styles.cartItem}>
+                                    <Text style={[styles.itemText, { flex: 2 }]} numberOfLines={1}>{item.product_name}</Text>
+                                    <Text style={[styles.qtyText, { flex: 0.5 }]}>{item.quantity}</Text>
+                                    <Text style={[styles.totalText, { flex: 1 }]}>{item.total}</Text>
+                                    <IconButton
+                                        icon="close-circle-outline"
+                                        size={18}
+                                        iconColor="#ff5252"
+                                        onPress={() => {
+                                            const nc = [...cart]; nc.splice(index, 1); setCart(nc);
+                                        }}
+                                    />
+                                </View>
+                            ))
+                        )}
+                    </View>
+                </View>
+
+                {/* Spacer taake footer ke peeche content na dube */}
+                <View style={{ height: 140 }} />
             </ScrollView>
 
+            {/* Sticky Footer */}
             <View style={styles.footer}>
-                <Text style={styles.totalText}>GRAND TOTAL: PKR {calculateGrandTotal()}</Text>
+                <View style={styles.footerRow}>
+                    <Text style={styles.footerTotalLabel}>GRAND TOTAL:</Text>
+                    <Text style={styles.footerTotalAmount}>PKR {calculateGrandTotal()}</Text>
+                </View>
                 <Button
                     mode="contained"
-
                     onPress={handleCreateSale}
                     loading={loading}
-                    disabled={loading}
-
                     style={styles.submitButton}
                 >
-                    SUBMIT & CREATE SALE
+                    CONFIRM & CREATE SALE
                 </Button>
             </View>
+
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
-    content: { padding: 15 },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#1b2142' },
-    formCard: { padding: 15, backgroundColor: '#f8f9fa', borderRadius: 10, elevation: 2 },
-    label: { fontSize: 12, color: '#666', marginTop: 10 },
-    dropdown: { height: 50, borderColor: '#ccc', borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, backgroundColor: '#fff', marginTop: 5 },
-    row: { flexDirection: 'row', alignItems: 'center', marginTop: 15 },
-    priceValue: { fontSize: 18, fontWeight: 'bold', color: '#1b2142' },
-    qtyInput: { width: 80, height: 45, marginLeft: 20 },
-    addButton: { marginTop: 20, backgroundColor: '#2ecc71' },
-    footer: { padding: 15, borderTopWidth: 1, borderTopColor: '#eee' },
-    totalText: { fontSize: 18, fontWeight: 'bold', textAlign: 'right', marginBottom: 10 },
-    submitButton: { backgroundColor: '#1b2142' }
+    container: { flex: 1, backgroundColor: '#f8f9fa' },
+    header: { backgroundColor: '#1b2142', height: 55 },
+    headerTitle: { color: 'white', fontSize: 16, fontWeight: 'bold' },
+    headerSubtitle: { color: '#adb5bd', fontSize: 11 },
+
+    scrollView: { flex: 1 },
+    scrollContent: { padding: 12 }, // Extra padding hatadi jo gap banati thi
+
+    sectionTitle: { fontSize: 12, fontWeight: '700', color: '#495057', marginBottom: 8, textTransform: 'uppercase' },
+
+    formCard: {
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor: '#fff',
+        elevation: 2,
+        marginBottom: 20
+    },
+    row: { flexDirection: 'row' },
+    dropdown: {
+        height: 40,
+        borderColor: '#dee2e6',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        backgroundColor: '#fff',
+    },
+    dropdownPlaceholder: { fontSize: 13, color: '#adb5bd' },
+
+
+    actionRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 12
+    },
+    priceValue: { fontSize: 18, fontWeight: 'bold', color: '#2ecc71' },
+    qtyContainer: { flexDirection: 'row', alignItems: 'center' },
+    qtyInput: { width: 60, height: 40, marginRight: 8, backgroundColor: '#fff' },
+    addButton: { backgroundColor: '#1b2142', borderRadius: 8, height: 40, justifyContent: 'center' },
+    addButtonLabel: { fontSize: 12, fontWeight: 'bold' },
+
+    // Cart Styling
+    cartSection: { marginTop: 5 },
+    cartHeader: {
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        paddingBottom: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e9ecef'
+    },
+    cartHeaderText: { fontSize: 11, fontWeight: 'bold', color: '#adb5bd' },
+    cartList: { backgroundColor: '#fff', borderRadius: 12, marginTop: 5, elevation: 1 },
+    cartItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f8f9fa'
+    },
+    itemText: { fontSize: 13, fontWeight: '500', color: '#212529' },
+    qtyText: { fontSize: 13, textAlign: 'center', color: '#495057' },
+    totalText: { fontSize: 13, textAlign: 'right', fontWeight: 'bold', color: '#1b2142' },
+    emptyText: { textAlign: 'center', padding: 20, color: '#adb5bd', fontSize: 13 },
+
+    // Footer
+    footer: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 15,
+        paddingTop: 15,
+        // --- Ye 3 lines button ko upar karengi ---
+        paddingBottom: 25, // Button ke niche ki jagah barha di
+        marginBottom: 0,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+
+        elevation: 25,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4
+    },
+    footerRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+    footerTotalLabel: { fontSize: 14, fontWeight: '600', color: '#6c757d' },
+    footerTotalAmount: { fontSize: 20, fontWeight: 'bold', color: '#1b2142' },
+    submitButton: {
+        borderRadius: 12,
+        height: 52, // Height thori barha di professional look ke liye
+        backgroundColor: '#1b2142',
+        justifyContent: 'center',
+        // --- Agar mazeed upar chahiye to yahan margin use karein ---
+        marginTop: 5
+    },
+    dropdownSelectedText: {
+        fontSize: 13,
+        color: '#212529' // Select hone ke baad ka text color
+    },
+
+    // --- YE DO NAYE STYLES ADD KAREIN ---
+    dropdownItemText: {
+        fontSize: 14,
+        color: '#212529', // List ke andar ka text color (Dark)
+    },
+    dropdownContainer: {
+        borderRadius: 8,
+        backgroundColor: '#ffffff', // List ka background
+        marginTop: 2,
+    },
+
+
 });
 
 export default CreateSaleScreen;

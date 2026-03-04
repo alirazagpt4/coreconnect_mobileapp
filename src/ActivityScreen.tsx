@@ -43,15 +43,7 @@ const ActivityScreen = ({ navigation }: any) => {
         <Divider style={styles.divider} />
 
         {/* Simple List Items */}
-        <List.Item
-          title="Create Sale"
-          titleStyle={styles.listTitle}
-          left={props => <List.Icon {...props} icon="cart-plus" color="#2ecc71" />}
-          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
-          onPress={() => navigation.navigate('CreateSale')}
-          style={styles.listItem}
-        />
-        <Divider />
+
 
         <List.Item
           title="Mark Attendance"
@@ -59,6 +51,16 @@ const ActivityScreen = ({ navigation }: any) => {
           left={props => <List.Icon {...props} icon="calendar-check" color="#3498db" />}
           right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
           onPress={() => navigation.navigate('MarkAttendance')}
+          style={styles.listItem}
+        />
+        <Divider />
+
+        <List.Item
+          title="Create Sale"
+          titleStyle={styles.listTitle}
+          left={props => <List.Icon {...props} icon="cart-plus" color="#2ecc71" />}
+          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+          onPress={() => navigation.navigate('CreateSale')}
           style={styles.listItem}
         />
         <Divider />
