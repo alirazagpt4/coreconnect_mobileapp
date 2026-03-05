@@ -4,6 +4,11 @@ import { Text, Appbar, TextInput, Button, Card, List, Divider, IconButton } from
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
 
+const formatNumber = (num: any) => {
+    if (!num) return "0";
+    return parseFloat(num).toLocaleString('en-US');
+};
+
 const CreateSaleScreen = ({ navigation }: any) => {
     const [profile, setProfile] = useState<any>(null);
     const [categories, setCategories] = useState<any[]>([]);
@@ -223,7 +228,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
                     />
 
                     <View style={styles.actionRow}>
-                        <Text style={styles.priceValue}>PKR {selectedProduct?.price_after_discount || 0}</Text>
+                        <Text style={styles.priceValue}>RS. {formatNumber(selectedProduct?.price_after_discount || 0)}</Text>
                         <View style={styles.qtyContainer}>
                             <TextInput
                                 value={quantity}
@@ -247,7 +252,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
                 </Card>
 
                 <View style={styles.cartSection}>
-                    <Text style={styles.sectionTitle}>🛒 CURRENT CART ({cart.length})</Text>
+                    <Text style={styles.sectionTitle}> CURRENT CART ({cart.length})</Text>
 
                     <View style={styles.cartHeader}>
                         <Text style={[styles.cartHeaderText, { flex: 2 }]}>ITEM</Text>
@@ -262,9 +267,9 @@ const CreateSaleScreen = ({ navigation }: any) => {
                         ) : (
                             cart.map((item, index) => (
                                 <View key={index} style={styles.cartItem}>
-                                    <Text style={[styles.itemText, { flex: 2 }]} numberOfLines={1}>{item.product_name}</Text>
+                                    <Text style={[styles.itemText, { flex: 2 }]}>{item.product_name}</Text>
                                     <Text style={[styles.qtyText, { flex: 0.5 }]}>{item.quantity}</Text>
-                                    <Text style={[styles.totalText, { flex: 1 }]}>{item.total}</Text>
+                                    <Text style={[styles.totalText, { flex: 1 }]}>{formatNumber(item.total)}</Text>
                                     <IconButton
                                         icon="close-circle-outline"
                                         size={18}
@@ -287,7 +292,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
             <View style={styles.footer}>
                 <View style={styles.footerRow}>
                     <Text style={styles.footerTotalLabel}>GRAND TOTAL:</Text>
-                    <Text style={styles.footerTotalAmount}>PKR {calculateGrandTotal()}</Text>
+                    <Text style={styles.footerTotalAmount}>RS. {formatNumber(calculateGrandTotal())}</Text>
                 </View>
                 <Button
                     mode="contained"
@@ -361,9 +366,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingLeft: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#f8f9fa'
+        borderBottomColor: '#f8f9fa',
+        minHeight: 55,
     },
-    itemText: { fontSize: 13, fontWeight: '500', color: '#212529' },
+    itemText: { fontSize: 13, fontWeight: '500', color: '#212529', flexWrap: 'wrap' },
     qtyText: { fontSize: 13, textAlign: 'center', color: '#495057' },
     totalText: { fontSize: 13, textAlign: 'right', fontWeight: 'bold', color: '#1b2142' },
     emptyText: { textAlign: 'center', padding: 20, color: '#adb5bd', fontSize: 13 },
