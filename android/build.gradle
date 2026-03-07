@@ -12,10 +12,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-    }
+    // Versions lazmi add karein
+    classpath("com.android.tools.build:gradle:8.1.1") 
+    // Yahan version variable use karne ki jagah direct react-native-gradle-plugin likhein
+    classpath("com.facebook.react:react-native-gradle-plugin") 
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+    
+}
 }
 
 // Buildscript ke bahar hona chahiye ye block
