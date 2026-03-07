@@ -65,6 +65,17 @@ const ActivityScreen = ({ navigation }: any) => {
         />
         <Divider />
 
+
+        <List.Item
+          title="Short Items"
+          titleStyle={styles.listTitle}
+          left={props => <List.Icon {...props} icon="cart-plus" color="#e74c3c" />} // Red color for 'Short' alert
+          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+          onPress={() => navigation.navigate('ShortItems')}
+          style={styles.listItem}
+        />
+        <Divider />
+
         <List.Item
           title="Reports"
           titleStyle={styles.listTitle}
