@@ -11,13 +11,16 @@ import MarkAttendanceScreen from './src/MarkAttendanceScreen';
 import StartDayScreen from './src/StartDayScreen';
 import CreateSaleScreen from './src/CreateSaleScreen';
 import ShortItemScreen from './src/ShortItemScreen';
+import ReportScreen from './src/ReportScreen';
+import AttendanceReportScreen from './src/AttendanceReportScreen';
+import SalesReportScreen from './src/SalesReportScreen';
 
 const Stack = createStackNavigator();
 
 const NavigationTree = () => {
   const { token, isLoading } = useAuth();
 
-  
+
   if (isLoading) {
     return <SplashScreen />;
   }
@@ -25,16 +28,20 @@ const NavigationTree = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {token == null ? (
-       
+
         <Stack.Screen name="Login" component={LoginScreen} />
       ) : (
         <>
-        
-        <Stack.Screen name="Activity" component={ActivityScreen} />
-        <Stack.Screen name="MarkAttendance" component={MarkAttendanceScreen} />
-        <Stack.Screen name="StartDay" component={StartDayScreen} />
-        <Stack.Screen name="CreateSale" component={CreateSaleScreen} />
-        <Stack.Screen name="ShortItems" component={ShortItemScreen} />
+
+          <Stack.Screen name="Activity" component={ActivityScreen} />
+          <Stack.Screen name="MarkAttendance" component={MarkAttendanceScreen} />
+          <Stack.Screen name="StartDay" component={StartDayScreen} />
+          <Stack.Screen name="CreateSale" component={CreateSaleScreen} />
+          <Stack.Screen name="ShortItems" component={ShortItemScreen} />
+          <Stack.Screen name="Report" component={ReportScreen} />
+          <Stack.Screen name="Attendance Report" component={AttendanceReportScreen} />
+          <Stack.Screen name="Sales Report" component={SalesReportScreen} />
+
 
         </>
       )}

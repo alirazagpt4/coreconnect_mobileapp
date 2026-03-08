@@ -81,7 +81,7 @@ const ActivityScreen = ({ navigation }: any) => {
           titleStyle={styles.listTitle}
           left={props => <List.Icon {...props} icon="file-chart" color="#e67e22" />}
           right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
-          onPress={() => console.log('Reports Clicked')}
+          onPress={() => navigation.navigate('Report')}
           style={styles.listItem}
         />
         <Divider />

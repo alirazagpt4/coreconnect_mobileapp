@@ -121,7 +121,7 @@ const ShortItemScreen = ({ navigation }: any) => {
                 <Appbar.Content
                     title={
                         <View>
-                            <Text style={styles.headerTitle}>Short Items Report</Text>
+                            <Text style={styles.headerTitle}>Short Items</Text>
                             <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Store"}</Text>
                         </View>
                     }
@@ -129,7 +129,7 @@ const ShortItemScreen = ({ navigation }: any) => {
             </Appbar.Header>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>🔍 SELECT SHORT PRODUCT</Text>
+                <Text style={styles.sectionTitle}>SELECT SHORT ITEMS</Text>
 
                 <Card style={styles.formCard}>
                     <View style={styles.row}>
@@ -181,12 +181,12 @@ const ShortItemScreen = ({ navigation }: any) => {
                         style={styles.addButton}
                         icon="plus"
                     >
-                        ADD TO SHORT LIST
+                        ADD TO SHORT ITEM LIST
                     </Button>
                 </Card>
 
                 <View style={styles.listSection}>
-                    <Text style={styles.sectionTitle}>📝 ITEMS TO REPORT ({shortItemsList.length})</Text>
+                    <Text style={styles.sectionTitle}>📝 ITEMS TO CART ({shortItemsList.length})</Text>
                     <View style={styles.listCard}>
                         {shortItemsList.length === 0 ? (
                             <Text style={styles.emptyText}>No items added yet</Text>
