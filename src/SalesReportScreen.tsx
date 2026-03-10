@@ -154,22 +154,46 @@ const SalesReportScreen = ({ navigation }: any) => {
                                             <Text style={styles.salesSectionTitle}> Daily Sales</Text>
                                         </View>
                                         {day.sales && day.sales.length > 0 ? (
-                                            day.sales.map((sale: any, sIdx: number) => (
-                                                <View key={sIdx} style={styles.storeBlock}>
-                                                    <Text style={styles.storeLabel}>Store: <Text style={{ color: '#1b2142' }}>{sale.store}</Text></Text>
-                                                    {sale.items.map((item: any, iIdx: number) => (
-                                                        <View key={iIdx} style={styles.productRow}>
-                                                            <Text style={styles.productName}>{item.product} (x{item.qty})</Text>
-                                                            <Text style={styles.productPrice}>{formatPrice(item.total)}</Text>
+                                            day.sales.map((sale: any, sIdx: number) => {
+                                                // --- FRONTEND CALCULATION ---
+                                                // Yahan hum manually total nikaal rahe hain
+                                                let totalQty = 0;
+                                                let totalAmount = 0;
+
+                                                if (sale.items && sale.items.length > 0) {
+                                                    sale.items.forEach((item: any) => {
+                                                        totalQty += parseInt(item.qty) || 0;
+                                                        totalAmount += parseFloat(item.total) || 0;
+                                                    });
+                                                }
+
+                                                return (
+                                                    <View key={sIdx} style={styles.storeBlock}>
+                                                        <Text style={styles.storeLabel}>Store: <Text style={{ color: '#1b2142' }}>{sale.store}</Text></Text>
+
+                                                        {sale.items.map((item: any, iIdx: number) => (
+                                                            <View key={iIdx} style={styles.productRow}>
+                                                                <Text style={styles.productName}>{item.product} (x{item.qty})</Text>
+                                                                <Text style={styles.productPrice}>{formatPrice(item.total)}</Text>
+                                                            </View>
+                                                        ))}
+
+                                                        {/* --- DISPLAY TOTAL QTY & AMOUNT --- */}
+                                                        <View style={styles.storeTotalLine}>
+                                                            <View>
+                                                                <Text style={styles.storeTotalText}>Total Qty</Text>
+                                                                <Text style={styles.qtyAmount}>{totalQty} Units</Text>
+                                                            </View>
+                                                            <View style={{ alignItems: 'flex-end' }}>
+                                                                <Text style={styles.storeTotalText}>Total Sale</Text>
+                                                                <Text style={styles.storeTotalAmount}>RS. {formatPrice(totalAmount)}</Text>
+                                                            </View>
                                                         </View>
-                                                    ))}
-                                                    <View style={styles.storeTotalLine}>
-                                                        <Text style={styles.storeTotalText}>Total Sale:</Text>
-                                                        <Text style={styles.storeTotalAmount}>RS. {formatPrice(sale.saleTotal)}</Text>
+
+                                                        {sIdx < day.sales.length - 1 && <Divider style={{ marginVertical: 12 }} />}
                                                     </View>
-                                                    {sIdx < day.sales.length - 1 && <Divider style={{ marginVertical: 12 }} />}
-                                                </View>
-                                            ))
+                                                );
+                                            })
                                         ) : (
                                             <Text style={styles.emptySalesText}>No sales reported for this date.</Text>
                                         )}
@@ -233,6 +257,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10
     },
+    qtyAmount: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#1b2142', // Dark blue theme color
+    }
 });
 
 export default SalesReportScreen;
