@@ -185,7 +185,7 @@ const SalesReportScreen = ({ navigation }: any) => {
                                                                 <Text style={styles.qtyAmount}>{totalQty} Units</Text>
                                                             </View>
                                                             <View style={{ alignItems: 'flex-end' }}>
-                                                                <Text style={styles.storeTotalText}>Total Sale</Text>
+                                                                <Text style={styles.storeTotalText}>Total Value</Text>
                                                                 <Text style={styles.storeTotalAmount}>RS. {formatPrice(totalAmount)}</Text>
                                                             </View>
                                                         </View>
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     qtyAmount: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: '#1b2142', // Dark blue theme color
+        color: '#27ae60', // Dark blue theme color
     }
 });
 
