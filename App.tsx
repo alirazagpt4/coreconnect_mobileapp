@@ -14,6 +14,7 @@ import ShortItemScreen from './src/ShortItemScreen';
 import ReportScreen from './src/ReportScreen';
 import AttendanceReportScreen from './src/AttendanceReportScreen';
 import SalesReportScreen from './src/SalesReportScreen';
+import InterceptionScreen from './src/InterceptionScreen';
 
 const Stack = createStackNavigator();
 
@@ -41,6 +42,7 @@ const NavigationTree = () => {
           <Stack.Screen name="Report" component={ReportScreen} />
           <Stack.Screen name="Attendance Report" component={AttendanceReportScreen} />
           <Stack.Screen name="Sales Report" component={SalesReportScreen} />
+          <Stack.Screen name="Interception" component={InterceptionScreen} />
 
 
         </>

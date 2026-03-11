@@ -55,8 +55,21 @@ const ActivityScreen = ({ navigation }: any) => {
         />
         <Divider />
 
+
+
+
         <List.Item
-          title="Create Sale"
+          title="Create Interceptions"
+          titleStyle={styles.listTitle}
+          left={props => <List.Icon {...props} icon="target" color="#2ecc71" />}
+          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+          onPress={() => navigation.navigate('Interception')}
+          style={styles.listItem}
+        />
+        <Divider />
+
+        <List.Item
+          title="Create Sales"
           titleStyle={styles.listTitle}
           left={props => <List.Icon {...props} icon="cart-plus" color="#2ecc71" />}
           right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
