@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, Alert, ScrollView } from 'react-native';
 import { Text, Appbar, Button, HelperText } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import API from './api/API.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIsFocused } from '@react-navigation/native';
+import { useToast } from './context/ToastContext';
 
 const MarkAttendanceScreen = ({ navigation, route }: any) => {
+  const toast = useToast();
   const [attendanceType, setAttendanceType] = useState<string | null>(null);
-  const [loading , setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
   const isFocused = useIsFocused();
 
   // Colors
@@ -16,7 +18,7 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
   const deepMaroon = '#9a324e';
 
   // Jab StartDay screen se wapas aayein toh status check karein
- useEffect(() => {
+  useEffect(() => {
     const initScreen = async () => {
       // 1. Pehle check karo storage mein kuch hai ya nahi
       const savedDate = await AsyncStorage.getItem('attendanceDate');
@@ -38,7 +40,7 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
         // Status clear karo taake loop na bane
         navigation.setParams({ status: undefined });
       }
-      
+
       setLoading(false);
     };
 
@@ -49,19 +51,19 @@ const MarkAttendanceScreen = ({ navigation, route }: any) => {
 
 
   // Status aur Date dono save karne ka function
-const saveStatusLocally = async (type: string) => {
-  const today = new Date().toISOString().split('T')[0];
-  await AsyncStorage.setItem('attendanceDate', today);
-  await AsyncStorage.setItem('attendanceType', type);
-  setAttendanceType(type);
-};
+  const saveStatusLocally = async (type: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    await AsyncStorage.setItem('attendanceDate', today);
+    await AsyncStorage.setItem('attendanceType', type);
+    setAttendanceType(type);
+  };
 
   // Leave API Call Logic
   const submitLeave = async () => {
     setLoading(true);
     try {
       const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
-
+      toast.showToast("Marking leave...");
       // Leave ke liye payload (isLeave: 'true')
       const formData = new FormData();
       formData.append('image', ""); // Leave mein image empty jati hai
@@ -77,13 +79,13 @@ const saveStatusLocally = async (type: string) => {
       if (response.data.success) {
         // setAttendanceType('leave');
         await saveStatusLocally('leave');
-        Alert.alert("Success", "Your leave has been marked for today.");
+        toast.showToast("Leave marked successfully");
       } else {
-        Alert.alert("Error", response.data.message || "Failed to mark leave");
+        toast.showToast(response.data.message || "Failed to mark leave");
       }
     } catch (error: any) {
       console.log("Leave Error:", error.response?.data || error.message);
-      Alert.alert("Server Error", "Could not connect to server.");
+      toast.showToast("Server Error, try again later.");
     } finally {
       setLoading(false);
     }
@@ -95,9 +97,9 @@ const saveStatusLocally = async (type: string) => {
       "Are you taking leave today?",
       [
         { text: "No", style: "cancel" },
-        { 
-          text: "Yes", 
-          onPress: submitLeave 
+        {
+          text: "Yes",
+          onPress: submitLeave
         }
       ]
     );
@@ -111,15 +113,15 @@ const saveStatusLocally = async (type: string) => {
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content}>
-        
-       {attendanceType && (
-  <View style={styles.statusBox}>
-    <Icon name="check-circle" size={24} color={navyBlue} />
-    <Text style={[styles.statusText, { color: navyBlue }]}>
-      {attendanceType === 'leave' ? "You are on leave today" : "Your day has been started"}
-    </Text>
-  </View>
-)}
+
+        {attendanceType && (
+          <View style={styles.statusBox}>
+            <Icon name="check-circle" size={24} color={navyBlue} />
+            <Text style={[styles.statusText, { color: navyBlue }]}>
+              {attendanceType === 'leave' ? "You are on leave today" : "Your day has been started"}
+            </Text>
+          </View>
+        )}
 
         <Text style={styles.label}>Select Attendance Action</Text>
 

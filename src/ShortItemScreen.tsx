@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Appbar, Button, Card, IconButton } from 'react-native-paper';
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
+import { useToast } from './context/ToastContext';
 
 const ShortItemScreen = ({ navigation }: any) => {
+    const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [categories, setCategories] = useState<any[]>([]);
     const [subCategories, setSubCategories] = useState<any[]>([]);
@@ -66,16 +68,17 @@ const ShortItemScreen = ({ navigation }: any) => {
 
     // 4. Add to Short List
     const addItemToList = () => {
-        if (!selectedProduct) return Alert.alert("Wait", "Please select a product first");
+        if (!selectedProduct) return toast.showToast("Please select a product first");
 
         // Duplicate check
         const exists = shortItemsList.find(i => i.item_id === selectedProduct.id);
-        if (exists) return Alert.alert("Note", "This item is already in the list");
+        if (exists) return toast.showToast("This item is already in the list");
 
         const newItem = {
             item_id: selectedProduct.id,
             product_name: selectedProduct.product_name || selectedProduct.name,
         };
+        toast.showToast("Item added to list");
         setShortItemsList([...shortItemsList, newItem]);
         setSelectedProduct(null); // Reset product dropdown after add
     };
@@ -83,7 +86,7 @@ const ShortItemScreen = ({ navigation }: any) => {
     // 5. Submit Report
     const handleSubmitShortItems = async () => {
         if (shortItemsList.length === 0) {
-            return Alert.alert("Error", "List khali hai, kam az kam ek item toh add karein!");
+            return toast.showToast("Please add item to the list!");
         }
 
         setLoading(true);
@@ -101,14 +104,20 @@ const ShortItemScreen = ({ navigation }: any) => {
             const res = await API.post('/shortitems/create-short-items', payload);
 
             if (res.data.success) {
-                Alert.alert("Success", "Short items report submitted successfully!");
-                navigation.goBack();
+                toast.showToast("Short items report submitted successfully!");
+                setTimeout(
+                    () => {
+
+                        navigation.goBack();
+                    },
+                    2000
+                )
             } else {
-                Alert.alert("Failed", res.data.message || "Kuch masla hua hai.");
+                toast.showToast(res.data.message || "Something went wrong.");
             }
         } catch (e) {
             console.log("Submit Error:", e);
-            Alert.alert("Error", "Server connection failed.");
+            toast.showToast("Server connection failed.");
         } finally {
             setLoading(false);
         }

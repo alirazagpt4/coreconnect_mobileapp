@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { ToastProvider } from './src/context/ToastContext';
 
 // Hamara simple Context aur Screens
 import { AuthProvider, useAuth } from './src/context/AuthContext';
@@ -54,9 +55,11 @@ const NavigationTree = () => {
 export default function App() {
   return (
     <AuthProvider>
-      <NavigationContainer>
-        <NavigationTree />
-      </NavigationContainer>
+      <ToastProvider>
+        <NavigationContainer>
+          <NavigationTree />
+        </NavigationContainer>
+      </ToastProvider>
     </AuthProvider>
   );
 }

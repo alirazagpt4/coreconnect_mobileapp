@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Appbar, TextInput, Button, Card, List, Divider, IconButton } from 'react-native-paper';
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
+import { useToast } from './context/ToastContext';
 
 const formatNumber = (num: any) => {
     if (!num) return "0";
@@ -10,6 +11,7 @@ const formatNumber = (num: any) => {
 };
 
 const CreateSaleScreen = ({ navigation }: any) => {
+    const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [categories, setCategories] = useState<any[]>([]);
     const [subCategories, setSubCategories] = useState<any[]>([]);
@@ -98,7 +100,9 @@ const CreateSaleScreen = ({ navigation }: any) => {
             total: parseInt(quantity) * parseFloat(selectedProduct.price_after_discount || 0)
         };
         setCart([...cart, newItem]);
+        setSelectedProduct(null);
         setQuantity('');
+        toast.showToast("Item added to cart");
     };
 
     const calculateGrandTotal = () => {
@@ -110,7 +114,8 @@ const CreateSaleScreen = ({ navigation }: any) => {
 
     const handleCreateSale = async () => {
         if (cart.length === 0) {
-            return Alert.alert("Error", "Bhai, pehle cart mein kuch add toh kar lo!");
+            toast.showToast("Please add items to cart");
+            return;
         }
 
         const payload = {
@@ -129,7 +134,10 @@ const CreateSaleScreen = ({ navigation }: any) => {
             const res = await API.post('/sales/create-sale', payload);
 
             if (res.data.success) {
-                Alert.alert("Success", "Sale created successfully ");
+                setTimeout(() => {
+                    toast.showToast("Sale created successfully")
+
+                }, 2000);
 
                 // --- SAB KUCH KHALI KARO (RESET) ---
                 setCart([]);             // Cart khali ho gayi
@@ -141,14 +149,20 @@ const CreateSaleScreen = ({ navigation }: any) => {
                 setProducts([]);         // Products ki list clear
 
                 // Agar aap chahte hain screen band ho jaye:
-                navigation.goBack();
+                setTimeout(
+                    () => {
+
+                        navigation.goBack();
+                    },
+                    2000
+                )
 
             } else {
-                Alert.alert("Failed", res.data.message || "Kuch masla hua hai.");
+                toast.showToast(res.data.message || "Something went wrong.");
             }
         } catch (e) {
             console.log("Sale Error:", e);
-            Alert.alert("Error", "Server ka masla hai, dobara try karein.");
+            toast.showToast("Server not responding, try again later.");
         }
     };
 

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Appbar, TextInput, Button, Card } from 'react-native-paper';
 import API from './api/API.js';
+import { useToast } from './context/ToastContext';
 
 const InterceptionScreen = ({ navigation }: any) => {
+    const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [intercepted, setIntercepted] = useState('');
     const [converted, setConverted] = useState('');
@@ -16,7 +18,7 @@ const InterceptionScreen = ({ navigation }: any) => {
             try {
                 const res = await API.get('/users/profile');
                 if (res.data && res.data.profile) {
-                    console.log("profile res :::" , res.data.profile);
+                    console.log("profile res :::", res.data.profile);
                     setProfile(res.data.profile);
                 }
             } catch (e) {
@@ -46,11 +48,11 @@ const InterceptionScreen = ({ navigation }: any) => {
         const convVal = parseInt(converted);
 
         if (!intercepted || !converted) {
-            return Alert.alert("Wait", "Please enter both Interceptions and Conversions");
+            return toast.showToast("Please enter both Interceptions and Conversions");
         }
 
         if (convVal > intVal) {
-            return Alert.alert("Logic Error", "Conversions cannot be more than Interceptions");
+            return toast.showToast("Conversions cannot be more than Interceptions");
         }
 
         console.log("store...")
@@ -60,25 +62,31 @@ const InterceptionScreen = ({ navigation }: any) => {
             converted: convVal,
             ratio: parseFloat(ratio),
             store_id: profile?.assigned_stores?.[0]?.id || null, // Profile se store_id
-            
+
         };
 
         if (!payload.store_id) {
-            return Alert.alert("Error", "Store ID not found in your profile.");
+            return toast.showToast("Store ID not found in your profile.");
         }
 
         setLoading(true);
         try {
             const res = await API.post('/interceptions/add', payload);
             if (res.data.success) {
-                Alert.alert("Success", "Interception report saved successfully");
-                navigation.goBack();
+                toast.showToast("Interception report saved successfully");
+                setTimeout(
+                    () => {
+
+                        navigation.goBack();
+                    },
+                    2000
+                )
             } else {
-                Alert.alert("Failed", res.data.message);
+                toast.showToast(res.data.message);
             }
         } catch (e) {
             console.log("Save Error:", e);
-            Alert.alert("Error", "Server connection failed");
+            toast.showToast("Server connection failed");
         } finally {
             setLoading(false);
         }
