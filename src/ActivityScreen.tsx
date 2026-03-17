@@ -4,7 +4,9 @@ import { Text, Appbar, Divider, List } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+
 const ActivityScreen = ({ navigation }: any) => {
+
   const { logout, user } = useAuth();
 
   const handleLogoutPress = () => {

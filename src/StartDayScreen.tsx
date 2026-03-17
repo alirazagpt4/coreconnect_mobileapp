@@ -5,9 +5,11 @@ import { launchCamera } from 'react-native-image-picker';
 import Geolocation from 'react-native-geolocation-service';
 import { PermissionsAndroid, Platform } from 'react-native';
 import API from './api/API.js';
+import { useToast } from './context/ToastContext';
 
 
 const StartDayScreen = ({ navigation }: any) => {
+  const toast = useToast();
   const [photo, setPhoto] = useState<any>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,7 +61,7 @@ const StartDayScreen = ({ navigation }: any) => {
           resolve(coords);
         },
         (error) => {
-          Alert.alert("Location Error", "Could not get your location.");
+          toast.showToast("Location Error", "Could not get your location.");
           reject(error);
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
@@ -67,18 +69,18 @@ const StartDayScreen = ({ navigation }: any) => {
     });
   };
 
- 
+
   // 4. Submit Payload
   const handleSubmit = async () => {
     if (!photo) {
-      Alert.alert("Error", "Please take a photo first!");
+      toast.showToast("Please take a photo first!");
       return;
     }
 
     setLoading(true);
     try {
       // Location uthao
-      const currentLoc: any = await getLocation();      
+      const currentLoc: any = await getLocation();
       const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false }); // 24hr format behtar hai
       const currentDate = new Date().toISOString().split('T')[0];
 
@@ -111,18 +113,23 @@ const StartDayScreen = ({ navigation }: any) => {
 
       // Step D: Response Check (Postman response ke mutabiq)
       if (response.data.success) {
-        Alert.alert("Success", response.data.message || "Day started successfully!");
+        toast.showToast(response.data.message || "Day started successfully!");
         // Status bhej kar wapas jayein taake buttons disable ho jayein
-        navigation.navigate('MarkAttendance', { status: 'marked' });
+        setTimeout(
+          () => {
+            navigation.navigate('MarkAttendance', { status: 'marked' });
+          },
+          2000
+        )
       } else {
-        Alert.alert("Error", response.data.message || "Something went wrong");
+        toast.showToast(response.data.message || "Something went wrong");
       }
-      
+
 
     } catch (error: any) {
       // Error handling (Backend ya Network issue)
       console.log("Submit Error:", error.response?.data || error.message);
-      Alert.alert("Server Error", error.response?.data?.message || "Failed to connect to server");
+      toast.showToast(error.response?.data?.message || "Failed to connect to server");
     } finally {
       setLoading(false);
     }
@@ -146,10 +153,10 @@ const StartDayScreen = ({ navigation }: any) => {
           )}
         </View>
 
-        <Button 
-          mode="outlined" 
-          icon="camera" 
-          onPress={takePhoto} 
+        <Button
+          mode="outlined"
+          icon="camera"
+          onPress={takePhoto}
           style={styles.cameraBtn}
           textColor={navyBlue}
         >
@@ -159,9 +166,9 @@ const StartDayScreen = ({ navigation }: any) => {
         {loading ? (
           <ActivityIndicator size="large" color={navyBlue} style={{ marginTop: 20 }} />
         ) : (
-          <Button 
-            mode="contained" 
-            onPress={handleSubmit} 
+          <Button
+            mode="contained"
+            onPress={handleSubmit}
             style={[styles.submitBtn, { backgroundColor: navyBlue }]}
           >
             Confirm & Start Day

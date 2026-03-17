@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Image, Alert } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
-import API from './api/API'; // Aapka banaya hua axios instance
+import API from './api/API';
+import { useToast } from './context/ToastContext';
 
 const LoginScreen = ({ navigation }: any) => {
+  const toast = useToast();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,12 +30,15 @@ const LoginScreen = ({ navigation }: any) => {
       const { message, token, user } = response.data;
 
       if (token) {
-        
-        login(user, token); 
 
-        console.log(message); 
-        
-       navigation.navigate('Activity'); 
+        login(user, token);
+
+        console.log(message);
+
+        toast.showToast(message);
+        setTimeout(() => {
+          navigation.navigate('Activity');
+        }, 2000);
       }
     } catch (error: any) {
       // Backend se aane wala error message dikhayen
@@ -49,7 +54,7 @@ const LoginScreen = ({ navigation }: any) => {
     <View style={styles.container}>
       <Image source={require('./assets/logo.jpeg')} style={styles.logo} />
       <Text variant="headlineMedium" style={styles.title}>Login</Text>
-      
+
       <TextInput
         label="Name"
         value={name}
@@ -70,9 +75,9 @@ const LoginScreen = ({ navigation }: any) => {
         activeOutlineColor="#1b2142"
       />
 
-      <Button 
-        mode="contained" 
-        onPress={handleLogin} 
+      <Button
+        mode="contained"
+        onPress={handleLogin}
         loading={loading} // API call ke waqt ghoomega
         disabled={loading}
         style={styles.button}

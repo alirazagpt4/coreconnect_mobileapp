@@ -73,7 +73,7 @@ const InterceptionScreen = ({ navigation }: any) => {
         try {
             const res = await API.post('/interceptions/add', payload);
             if (res.data.success) {
-                toast.showToast("Interception report saved successfully");
+                toast.showToast("Interception saved successfully");
                 setTimeout(
                     () => {
 
