@@ -226,13 +226,16 @@ const CreateSaleScreen = ({ navigation }: any) => {
                     </View>
 
                     <Dropdown
-                        style={[styles.dropdown, { flex: 1, marginRight: 5 }]}
+                        style={[styles.dropdown, { marginTop: 10 }]}
                         placeholderStyle={styles.dropdownPlaceholder}
                         selectedTextStyle={styles.dropdownSelectedText}
-                        // --- YE DO LINES ADD KAREIN ---
                         itemTextStyle={styles.dropdownItemText}
                         containerStyle={styles.dropdownContainer}
-                        activeColor='#b5b5b6ff'
+                        // --- SEARCH PROPS START ---
+                        search
+                        searchPlaceholder="Search product..."
+                        inputSearchStyle={{ height: 40, fontSize: 14, borderRadius: 8, color: '#000' }}
+                        // --- SEARCH PROPS END ---
                         data={products}
                         labelField="product_name"
                         valueField="id"

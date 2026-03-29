@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, Appbar, Button, Card, IconButton  , TextInput} from 'react-native-paper';
+import { Text, Appbar, Button, Card, IconButton, Divider } from 'react-native-paper';
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
 import { useToast } from './context/ToastContext';
 
-const ShortItemScreen = ({ navigation }: any) => {
+const ShortTesterScreen = ({ navigation }: any) => {
     const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [categories, setCategories] = useState<any[]>([]);
@@ -16,10 +16,9 @@ const ShortItemScreen = ({ navigation }: any) => {
     const [selectedCat, setSelectedCat] = useState<any>(null);
     const [selectedSubCat, setSelectedSubCat] = useState<any>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
-    const [quantity, setQuantity] = useState('1'); // Add this near other states
-    const [shortItemsList, setShortItemsList] = useState<any[]>([]);
+    const [testerList, setTesterList] = useState<any[]>([]);
 
-    // 1. Load Initial Data
+    // 1. Load Initial Data (Profile & Categories)
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
@@ -67,60 +66,48 @@ const ShortItemScreen = ({ navigation }: any) => {
         }
     };
 
-    // 4. Add to Short List
+    // 4. Add to List
     const addItemToList = () => {
         if (!selectedProduct) return toast.showToast("Please select a product first");
 
-        // Duplicate check
-        const exists = shortItemsList.find(i => i.item_id === selectedProduct.id);
+        const exists = testerList.find(i => i.item_id === selectedProduct.id);
         if (exists) return toast.showToast("This item is already in the list");
 
         const newItem = {
             item_id: selectedProduct.id,
             product_name: selectedProduct.product_name || selectedProduct.name,
-            quantity:quantity
         };
         toast.showToast("Item added to list");
-        setShortItemsList([...shortItemsList, newItem]);
-        setQuantity("1");
-        setSelectedProduct(null); // Reset product dropdown after add
+        setTesterList([...testerList, newItem]);
+        setSelectedProduct(null);
     };
 
     // 5. Submit Report
-    const handleSubmitShortItems = async () => {
-        if (shortItemsList.length === 0) {
+    const handleSubmit = async () => {
+        if (testerList.length === 0) {
             return toast.showToast("Please add item to the list!");
         }
 
         setLoading(true);
         const payload = {
             store_id: profile?.assigned_stores?.[0]?.id || 2,
-            ba_user_id: profile?.id || 10, // Profile se ID uthayi
-            report_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-            items: shortItemsList.map(item => ({
+            ba_user_id: profile?.id || 10,
+            report_date: new Date().toISOString().split('T')[0],
+            items: testerList.map(item => ({
                 item_id: item.item_id,
-                product_name: item.product_name,
-                quantity: parseInt(item.quantity)
+                product_name: item.product_name
             }))
         };
 
         try {
-            const res = await API.post('/shortitems/create-short-items', payload);
-
+            const res = await API.post('/shorttesters/create-testers', payload);
             if (res.data.success) {
-                toast.showToast("Short items report submitted successfully!");
-                setTimeout(
-                    () => {
-
-                        navigation.goBack();
-                    },
-                    2000
-                )
+                toast.showToast("Tester report submitted successfully!");
+                setTimeout(() => { navigation.goBack(); }, 2000);
             } else {
                 toast.showToast(res.data.message || "Something went wrong.");
             }
         } catch (e) {
-            console.log("Submit Error:", e);
             toast.showToast("Server connection failed.");
         } finally {
             setLoading(false);
@@ -134,7 +121,7 @@ const ShortItemScreen = ({ navigation }: any) => {
                 <Appbar.Content
                     title={
                         <View>
-                            <Text style={styles.headerTitle}>Short Items</Text>
+                            <Text style={styles.headerTitle}>Short Testers</Text>
                             <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Store"}</Text>
                         </View>
                     }
@@ -142,7 +129,7 @@ const ShortItemScreen = ({ navigation }: any) => {
             </Appbar.Header>
 
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.sectionTitle}>SELECT SHORT ITEMS</Text>
+                <Text style={styles.sectionTitle}>SELECT TESTER ITEMS</Text>
 
                 <Card style={styles.formCard}>
                     <View style={styles.row}>
@@ -180,11 +167,9 @@ const ShortItemScreen = ({ navigation }: any) => {
                         selectedTextStyle={styles.dropdownSelectedText}
                         itemTextStyle={styles.dropdownItemText}
                         containerStyle={styles.dropdownContainer}
-                        // --- SEARCH PROPS START ---
+                        inputSearchStyle={styles.inputSearchStyle}
                         search
                         searchPlaceholder="Search product..."
-                        inputSearchStyle={{ height: 40, fontSize: 14, borderRadius: 8, color: '#000' }}
-                        // --- SEARCH PROPS END ---
                         data={products}
                         labelField="product_name"
                         valueField="id"
@@ -193,36 +178,23 @@ const ShortItemScreen = ({ navigation }: any) => {
                         onChange={item => setSelectedProduct(item)}
                     />
 
-
-                    {/* Product Dropdown ke foran baad yeh add karo */}
-                    <TextInput
-                        mode="outlined"
-                        label="Quantity"
-                        value={quantity}
-                        onChangeText={setQuantity}
-                        keyboardType="numeric"
-                        style={{ marginTop: 10, backgroundColor: '#fff' }}
-                        outlineColor="#dee2e6"
-                        activeOutlineColor="#1b2142"
-                    />
-
                     <Button
                         mode="contained"
                         onPress={addItemToList}
                         style={styles.addButton}
                         icon="plus"
                     >
-                        ADD TO SHORT ITEM LIST
+                        ADD TO TESTER LIST
                     </Button>
                 </Card>
 
                 <View style={styles.listSection}>
-                    <Text style={styles.sectionTitle}>📝 ITEMS TO CART ({shortItemsList.length})</Text>
+                    <Text style={styles.sectionTitle}>📝 ITEMS TO CART ({testerList.length})</Text>
                     <View style={styles.listCard}>
-                        {shortItemsList.length === 0 ? (
+                        {testerList.length === 0 ? (
                             <Text style={styles.emptyText}>No items added yet</Text>
                         ) : (
-                            shortItemsList.map((item, index) => (
+                            testerList.map((item, index) => (
                                 <View key={index} style={styles.listItem}>
                                     <Text style={styles.itemText}>{index + 1}. {item.product_name}</Text>
                                     <IconButton
@@ -230,9 +202,9 @@ const ShortItemScreen = ({ navigation }: any) => {
                                         size={20}
                                         iconColor="#ff5252"
                                         onPress={() => {
-                                            const newList = [...shortItemsList];
+                                            const newList = [...testerList];
                                             newList.splice(index, 1);
-                                            setShortItemsList(newList);
+                                            setTesterList(newList);
                                         }}
                                     />
                                 </View>
@@ -246,12 +218,12 @@ const ShortItemScreen = ({ navigation }: any) => {
             <View style={styles.footer}>
                 <Button
                     mode="contained"
-                    onPress={handleSubmitShortItems}
+                    onPress={handleSubmit}
                     loading={loading}
                     disabled={loading}
                     style={styles.submitButton}
                 >
-                    SUBMIT SHORT ITEMS REPORT
+                    SUBMIT TESTER
                 </Button>
             </View>
         </View>
@@ -273,6 +245,7 @@ const styles = StyleSheet.create({
     dropdownSelectedText: { fontSize: 13, color: '#212529' },
     dropdownItemText: { fontSize: 14, color: '#212529' },
     dropdownContainer: { borderRadius: 8 },
+    inputSearchStyle: { height: 40, fontSize: 14, borderRadius: 8, color: '#000' },
     addButton: { backgroundColor: '#1b2142', borderRadius: 8, marginTop: 15 },
     listSection: { marginTop: 20 },
     listCard: { backgroundColor: '#fff', borderRadius: 12, elevation: 1, overflow: 'hidden' },
@@ -283,4 +256,4 @@ const styles = StyleSheet.create({
     submitButton: { borderRadius: 12, height: 52, backgroundColor: '#1b2142', justifyContent: 'center' }
 });
 
-export default ShortItemScreen;
+export default ShortTesterScreen;

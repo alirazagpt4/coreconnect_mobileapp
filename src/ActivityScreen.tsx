@@ -81,12 +81,36 @@ const ActivityScreen = ({ navigation }: any) => {
         <Divider />
 
 
+        {/* 3. NEW: Short Testers Section */}
+        <List.Item
+          title="Short Testers"
+          titleStyle={styles.listTitle}
+          left={props => <List.Icon {...props} icon="flask-outline" color="#9b59b6" />}
+          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+          onPress={() => navigation.navigate('ShortTesters')} // Navigation name check kar lena stack mein
+          style={styles.listItem}
+        />
+        <Divider />
+
+
         <List.Item
           title="Short Items"
           titleStyle={styles.listTitle}
           left={props => <List.Icon {...props} icon="cart-plus" color="#e74c3c" />} // Red color for 'Short' alert
           right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
           onPress={() => navigation.navigate('ShortItems')}
+          style={styles.listItem}
+        />
+        <Divider />
+
+
+        {/* 5. NEW: Expiry Stock Section */}
+        <List.Item
+          title="Expiry Stock"
+          titleStyle={styles.listTitle}
+          left={props => <List.Icon {...props} icon="calendar-remove" color="#f1c40f" />}
+          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+          onPress={() => navigation.navigate('ExpiryStock')} // Navigation name check kar lena stack mein
           style={styles.listItem}
         />
         <Divider />
