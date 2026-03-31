@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Text, Appbar, Divider, List } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
+import { Text, Appbar, Divider, List, } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -33,16 +33,40 @@ const ActivityScreen = ({ navigation }: any) => {
     <View style={styles.container}>
       {/* Simple Header */}
       <Appbar.Header style={{ backgroundColor: '#1b2142' }}>
-        <Appbar.Content title="CoreConnect" titleStyle={{ color: 'white' }} />
-        {/* <Appbar.Action icon="logout" color="white" onPress={handleLogoutPress} /> */}
+        {/* Left Side: Logo + Title Group */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingLeft: 10 }}>
+          <Image
+            source={require('./assets/logo.jpeg')} // Apna sahi path check kar lena
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14, // CORE FIX: Perfect circle (28 / 2 = 14)
+              borderWidth: 1, // Optional: Logo ke bahar patli white line
+              borderColor: 'rgba(255, 255, 255, 0.2)' // Subtle white border
+            }}
+            resizeMode="cover" // Cover zaroori hai perfect circle ke liye
+            accessibilityRole="image"
+            accessibilityLabel="CoreConnect Circular Logo"
+          />
+          <Text style={{
+            color: 'white',
+            fontSize: 18,
+            fontWeight: 'bold',
+            marginLeft: 10
+          }}>
+            Core Connect
+          </Text>
+        </View>
+
+        {/* Right Side: Version + Logout Group */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 5 }}>
           <Text
             style={{
               color: 'white',
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: '500',
               opacity: 0.7,
-              marginRight: -4 // Logout icon ke kareeb karne ke liye
+              marginRight: -4
             }}
             accessibilityLabel={`App Version ${version}`}
           >
@@ -54,6 +78,7 @@ const ActivityScreen = ({ navigation }: any) => {
             color="white"
             onPress={handleLogoutPress}
             rippleColor="rgba(255, 255, 255, .1)"
+            accessibilityLabel="Logout"
           />
         </View>
       </Appbar.Header>
