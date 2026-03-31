@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Text, Appbar, Divider, List } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
@@ -6,6 +6,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
 const ActivityScreen = ({ navigation }: any) => {
+  const [version, setVersion] = useState("v7.2");
+
 
   const { logout, user } = useAuth();
 
@@ -31,8 +33,29 @@ const ActivityScreen = ({ navigation }: any) => {
     <View style={styles.container}>
       {/* Simple Header */}
       <Appbar.Header style={{ backgroundColor: '#1b2142' }}>
-        <Appbar.Content title="Activity" titleStyle={{ color: 'white' }} />
-        <Appbar.Action icon="logout" color="white" onPress={handleLogoutPress} />
+        <Appbar.Content title="CoreConnect" titleStyle={{ color: 'white' }} />
+        {/* <Appbar.Action icon="logout" color="white" onPress={handleLogoutPress} /> */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 5 }}>
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 12,
+              fontWeight: '500',
+              opacity: 0.7,
+              marginRight: -4 // Logout icon ke kareeb karne ke liye
+            }}
+            accessibilityLabel={`App Version ${version}`}
+          >
+            {version}
+          </Text>
+
+          <Appbar.Action
+            icon="logout"
+            color="white"
+            onPress={handleLogoutPress}
+            rippleColor="rgba(255, 255, 255, .1)"
+          />
+        </View>
       </Appbar.Header>
 
       <ScrollView style={styles.content}>
