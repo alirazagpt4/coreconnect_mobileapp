@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Alert, Image } from 'react-native';
 import { Text, Appbar, Divider, List, } from 'react-native-paper';
 import { useAuth } from './context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+// import API from './api/API.js';
 
 
 const ActivityScreen = ({ navigation }: any) => {
-  const [version, setVersion] = useState("v7.2");
+  const [version, setVersion] = useState("v7.3");
+
+
+
 
 
   const { logout, user } = useAuth();
+  console.log("users role and designation", user.designation)
+  const isSupervisor = user?.designation?.toLowerCase() === 'supervisor';
 
   const handleLogoutPress = () => {
     Alert.alert(
@@ -36,13 +42,15 @@ const ActivityScreen = ({ navigation }: any) => {
         {/* Left Side: Logo + Title Group */}
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingLeft: 10 }}>
           <Image
-            source={require('./assets/logo.jpeg')} // Apna sahi path check kar lena
+            source={require('./assets/cc.png')} // Apna sahi path check kar lena
             style={{
               width: 28,
               height: 28,
               borderRadius: 14, // CORE FIX: Perfect circle (28 / 2 = 14)
               borderWidth: 1, // Optional: Logo ke bahar patli white line
-              borderColor: 'rgba(255, 255, 255, 0.2)' // Subtle white border
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              backgroundColor: 'white', // Subtle white border,
+              
             }}
             resizeMode="cover" // Cover zaroori hai perfect circle ke liye
             accessibilityRole="image"
@@ -152,16 +160,20 @@ const ActivityScreen = ({ navigation }: any) => {
         <Divider />
 
 
-        {/* 5. NEW: Expiry Stock Section */}
-        <List.Item
-          title="Expiry Stock"
-          titleStyle={styles.listTitle}
-          left={props => <List.Icon {...props} icon="calendar-remove" color="#f1c40f" />}
-          right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
-          onPress={() => navigation.navigate('ExpiryStock')} // Navigation name check kar lena stack mein
-          style={styles.listItem}
-        />
-        <Divider />
+        {/* 2. CONDITIONAL RENDERING: Sirf Supervisor ko dikhega */}
+        {isSupervisor && (
+          <>
+            <List.Item
+              title="Expiry Stock"
+              titleStyle={styles.listTitle}
+              left={props => <List.Icon {...props} icon="calendar-remove" color="#f1c40f" />}
+              right={props => <List.Icon {...props} icon="chevron-right" color="#ccc" />}
+              onPress={() => navigation.navigate('ExpiryStock')}
+              style={styles.listItem}
+            />
+            <Divider />
+          </>
+        )}
 
         <List.Item
           title="Reports"
