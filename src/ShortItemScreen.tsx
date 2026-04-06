@@ -194,17 +194,6 @@ const ShortItemScreen = ({ navigation }: any) => {
                     />
 
 
-                    {/* Product Dropdown ke foran baad yeh add karo */}
-                    <TextInput
-                        mode="outlined"
-                        label="Quantity"
-                        value={quantity}
-                        onChangeText={setQuantity}
-                        keyboardType="numeric"
-                        style={{ marginTop: 10, backgroundColor: '#fff' }}
-                        outlineColor="#dee2e6"
-                        activeOutlineColor="#1b2142"
-                    />
 
                     <Button
                         mode="contained"
