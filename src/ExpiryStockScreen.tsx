@@ -4,6 +4,7 @@ import { Text, Appbar, Button, Card, IconButton, TextInput } from 'react-native-
 import { Dropdown } from 'react-native-element-dropdown';
 import { DatePickerModal, en, registerTranslation } from 'react-native-paper-dates';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { PermissionsAndroid, Platform } from 'react-native';
 import API from './api/API.js';
 import { useToast } from './context/ToastContext';
 
@@ -15,6 +16,8 @@ const ExpiryStockScreen = ({ navigation }: any) => {
     const [categories, setCategories] = useState<any[]>([]);
     const [subCategories, setSubCategories] = useState<any[]>([]);
     const [products, setProducts] = useState<any[]>([]);
+    const [allStores, setAllStores] = useState<any[]>([]);
+    const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
 
     const [selectedCat, setSelectedCat] = useState<any>(null);
@@ -30,13 +33,31 @@ const ExpiryStockScreen = ({ navigation }: any) => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                // 1. Pehle User Profile lao
                 const profileRes = await API.get('/users/profile');
-                if (profileRes.data?.profile) setProfile(profileRes.data.profile);
+                const userProfile = profileRes.data?.profile;
+
+                if (userProfile) {
+                    setProfile(userProfile);
+
+                    // 2. Profile ID milte hi Supervisor ke Stores fetch karo
+                    // Humne string interpolation use ki hai `${userProfile.id}`
+                    const storeRes = await API.get(`/store/supervisor/${userProfile.id}`);
+
+                    console.log("Supervisor Stores:", storeRes.data);
+                    setAllStores(storeRes.data.data || []);
+                }
+
+                // 3. Categories fetch karo (Ye independent hai)
                 const catRes = await API.get('/category');
-                console.log("category in expiry" , catRes.data)
                 setCategories(catRes.data || []);
-            } catch (e) { console.log(e); }
+
+            } catch (e) {
+                console.error("Initialization Error:", e);
+                toast.showToast("Failed to load initial data");
+            }
         };
+
         fetchInitialData();
     }, []);
 
@@ -45,7 +66,7 @@ const ExpiryStockScreen = ({ navigation }: any) => {
         setSelectedSubCat(null);
         try {
             const res = await API.get(`/subCategory/${catId}`);
-            console.log("subcats in expiry" , res.data)
+            console.log("subcats in expiry", res.data)
             setSubCategories(res.data || []);
         } catch (e) { setSubCategories([]); }
     };
@@ -59,9 +80,26 @@ const ExpiryStockScreen = ({ navigation }: any) => {
         } catch (e) { setProducts([]); }
     };
 
-    const pickImage = () => {
+    const pickImage = async () => {
+        // Android ke liye permission check
+        if (Platform.OS === 'android') {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.CAMERA
+            );
+            if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                toast.showToast("Camera permission denied!");
+                return;
+            }
+        }
+
+        // Permission milne ke baad camera khulega
         launchCamera({ mediaType: 'photo', quality: 0.5 }, (response) => {
-            if (response.assets && response.assets.length > 0) {
+            if (response.didCancel) {
+                console.log('User cancelled');
+            } else if (response.errorCode) {
+                console.log('Error: ', response.errorMessage);
+                toast.showToast("Camera error: " + response.errorMessage);
+            } else if (response.assets && response.assets.length > 0) {
                 setImageUri(response.assets[0]);
             }
         });
@@ -87,13 +125,24 @@ const ExpiryStockScreen = ({ navigation }: any) => {
         toast.showToast("Added to list");
     };
 
+
+
+
+
+
     const handleSubmit = async () => {
         if (expiryList.length === 0) return toast.showToast("List is empty!");
         setLoading(true);
 
-        // FORM DATA REQUIRED FOR IMAGES
+        if (!selectedStoreId) {
+            return toast.showToast("Pehle Store select karein!");
+        }
+
         const formData = new FormData();
-        formData.append('store_id', profile?.assigned_stores?.[0]?.id || 2);
+
+        // ID number hai, lekin FormData string mangta hai. 
+        // String() use karne se TS khush rahega aur data sahi jayega.
+        formData.append('store_id', String(selectedStoreId));
 
         // Backend key mapping
         expiryList.forEach((item, index) => {
@@ -122,6 +171,10 @@ const ExpiryStockScreen = ({ navigation }: any) => {
         } finally { setLoading(false); }
     };
 
+
+
+    const selectedStoreName = allStores.find((s: any) => s.id === selectedStoreId)?.store_name;
+
     return (
         <View style={styles.container}>
             <Appbar.Header style={styles.header}>
@@ -129,12 +182,32 @@ const ExpiryStockScreen = ({ navigation }: any) => {
                 <Appbar.Content title={
                     <View>
                         <Text style={styles.headerTitle}>Expiry Stock</Text>
-                        <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Store"}</Text>
+                        <Text style={styles.headerSubtitle}>
+                            {selectedStoreName || "Select a Store"}
+                        </Text>
                     </View>
                 } />
             </Appbar.Header>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.sectionTitle}>Step 1: Select Store</Text>
+                <Dropdown
+                    style={[styles.dropdown, { marginBottom: 15, backgroundColor: '#fff' }]}
+                    placeholderStyle={styles.dropdownText}
+                    selectedTextStyle={styles.dropdownText}
+                    itemTextStyle={styles.dropdownItemText}
+                    data={allStores} // Jo useEffect mein fetch kiya
+                    labelField="store_name" // API response se key match karni chahiye
+                    valueField="id"
+                    placeholder="Choose Store"
+                    value={selectedStoreId} // State variable
+                    onChange={item => {
+                        setSelectedStoreId(item.id);
+                        console.log("Selected Store ID:", item.id);
+                    }}
+                    search // Taake supervisor search kar sake
+                    inputSearchStyle={styles.inputSearchStyle}
+                />
                 <Text style={styles.sectionTitle}>SELECT EXPIRY ITEMS</Text>
                 <Card style={styles.formCard}>
                     <View style={styles.row}>
