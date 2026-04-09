@@ -14,14 +14,30 @@ export const ToastProvider = ({ children }: any) => {
 
     // --- NETINFO LOGIC START ---
     useEffect(() => {
+        let isFirstLoad = true; // Taake app khulte hi "Back Online" ka shashka na aaye
+
         const unsubscribe = NetInfo.addEventListener(state => {
-            // Agar internet connection total khatam ho jaye
-            if (state.isConnected === false) {
-                showToast("No internet available. Please check your connection.", 'error');
+            console.log("Network State Changed:", state.isConnected);
+
+            if (isFirstLoad) {
+                // Sirf pehli baar check karega agar app offline khuli hai
+                if (state.isConnected === false) {
+                    showToast("You are starting offline", 'error');
+                }
+                isFirstLoad = false;
+                return;
+            }
+
+            if (state.isConnected === true) {
+                // Jab net wapas aaye
+                showToast("Back Online!", 'success');
+            } else if (state.isConnected === false) {
+                // Jab net chala jaye
+                showToast("No internet connection", 'error');
             }
         });
 
-        return () => unsubscribe(); // Cleanup listener
+        return () => unsubscribe();
     }, []);
     // --- NETINFO LOGIC END ---
 
