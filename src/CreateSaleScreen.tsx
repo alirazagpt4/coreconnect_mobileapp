@@ -33,6 +33,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
                 // Ensure data exists before setting
                 if (profileRes.data && profileRes.data.profile) {
                     const profileData = profileRes.data.profile;
+                    console.log("Fullname", profileData)
                     setProfile({ ...profileData });
                 }
 
@@ -176,8 +177,8 @@ const CreateSaleScreen = ({ navigation }: any) => {
                 <Appbar.Content
                     title={
                         <View>
-                            <Text style={styles.headerTitle}>{profile?.fullname || "Ayesha"}</Text>
-                            <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Store"}</Text>
+                            <Text style={styles.headerTitle}>{profile?.fullname || "Loading Full Name"}</Text>
+                            <Text style={styles.headerSubtitle}>{profile?.assigned_stores?.[0]?.store_name || "Loading Store"}</Text>
                         </View>
                     }
                 />

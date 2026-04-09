@@ -1,17 +1,35 @@
-import React, { createContext, useContext, useState, useRef } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import NetInfo from "@react-native-community/netinfo";
 
 const ToastContext = createContext<any>(null);
 
 export const ToastProvider = ({ children }: any) => {
     const [msg, setMsg] = useState('');
     const [visible, setVisible] = useState(false);
+    const [isError, setIsError] = useState(false);
     const slideAnim = useRef(new Animated.Value(100)).current; // Start position (hidden below)
 
-    const showToast = (message: string) => {
+
+    // --- NETINFO LOGIC START ---
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener(state => {
+            // Agar internet connection total khatam ho jaye
+            if (state.isConnected === false) {
+                showToast("No internet available. Please check your connection.", 'error');
+            }
+        });
+
+        return () => unsubscribe(); // Cleanup listener
+    }, []);
+    // --- NETINFO LOGIC END ---
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
         setMsg(message);
+        setIsError(type === 'error');
         setVisible(true);
+
 
         // Slide Up Animation
         Animated.spring(slideAnim, {
@@ -44,8 +62,19 @@ export const ToastProvider = ({ children }: any) => {
                     accessibilityLabel={msg}
                     accessibilityRole="alert"
                 >
-                    <View style={styles.toastContent}>
-                        <Icon name="check-circle" size={20} color="#2ecc71" style={styles.icon} />
+                    {/* 1. Yahan dynamic background color lag gaya */}
+                    <View style={[
+                        styles.toastContent,
+                        isError && { backgroundColor: '#c0392b' }
+                    ]}>
+                        <Icon
+                            // 2. Icon name change hoga: Error hai toh alert, warna check
+                            name={isError ? "alert-circle" : "check-circle"}
+                            size={20}
+                            // 3. Icon color change hoga: Error mein white, success mein green
+                            color={isError ? "#ffffff" : "#2ecc71"}
+                            style={styles.icon}
+                        />
                         <Text style={styles.text}>{msg}</Text>
                     </View>
                 </Animated.View>
