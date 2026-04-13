@@ -23,7 +23,7 @@ export const ToastProvider = ({ children }: any) => {
             // CASE 1: Net chala gaya
             if (state.isConnected === false) {
                 wasOffline.current = true; // Mark kar lo ke ab hum offline hain
-                showToast("No internet available. Please check your connection.", 'error');
+                showToast("No internet , You are Offine", 'error');
             }
             // CASE 2: Net wapas aaya (Sirf tab dikhao agar pehle offline tha)
             else if (state.isConnected === true && wasOffline.current === true) {

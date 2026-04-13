@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
 const ActivityScreen = ({ navigation }: any) => {
-  const [version, setVersion] = useState("v8.1");
+  const [version, setVersion] = useState("v8.2");
 
 
 

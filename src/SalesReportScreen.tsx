@@ -73,7 +73,9 @@ const SalesReportScreen = ({ navigation }: any) => {
         try {
             const endpoint = `/reports/sale-executive-report?fromDate=${fDateStr}&toDate=${tDateStr}&ba_id=${selectedBaId}`;
             const response = await API.get(endpoint);
+            console.log("report sale data", response.data.data);
             if (response.data.success) setReportData(response.data.data);
+
         } catch (error) { Alert.alert("Error", "Failed to fetch report"); }
         finally { setLoading(false); }
     };
@@ -169,7 +171,7 @@ const SalesReportScreen = ({ navigation }: any) => {
 
                                                 return (
                                                     <View key={sIdx} style={styles.storeBlock}>
-                                                        <Text style={styles.storeLabel}>Store: <Text style={{ color: '#1b2142' }}>{sale.store}</Text></Text>
+                                                        <Text style={styles.storeLabel}>Store: <Text style={{ color: '#1b2142' }}>{sale.store?.toUpperCase()} • {sale.area?.toUpperCase()}</Text></Text>
 
                                                         {sale.items.map((item: any, iIdx: number) => (
                                                             <View key={iIdx} style={styles.productRow}>
