@@ -135,22 +135,18 @@ const ExpiryStockScreen = ({ navigation }: any) => {
         setLoading(true);
 
         if (!selectedStoreId) {
+            setLoading(false); // Loading yahan stop karna zaroori hai
             return toast.showToast("Pehle Store select karein!");
         }
 
         const formData = new FormData();
-
-        // ID number hai, lekin FormData string mangta hai. 
-        // String() use karne se TS khush rahega aur data sahi jayega.
         formData.append('store_id', String(selectedStoreId));
 
-        // Backend key mapping
         expiryList.forEach((item, index) => {
             formData.append(`items[${index}][item_id]`, item.item_id);
             formData.append(`items[${index}][expiry_date]`, item.expiry_date);
             formData.append(`items[${index}][quantity]`, item.quantity);
 
-            // Image append
             formData.append('picture', {
                 uri: item.picture.uri,
                 type: item.picture.type,
@@ -166,9 +162,29 @@ const ExpiryStockScreen = ({ navigation }: any) => {
                 toast.showToast("Expiry report submitted!");
                 navigation.goBack();
             }
-        } catch (e) {
-            toast.showToast("Submission failed");
-        } finally { setLoading(false); }
+        } catch (e: any) {
+            // --- LEAD ENGINEER: BACKEND STATUS SPECIFIC ERRORS ---
+            const status = e.response?.status;
+            const serverMessage = e.response?.data?.message;
+
+            if (status === 409) {
+                // Idempotency: 60 seconds guard hit hua
+                toast.showToast(serverMessage || "Duplicate report! Please wait 60 seconds.");
+            } else if (status === 400) {
+                // Validation error
+                toast.statusToast(serverMessage || "Invalid data submitted.");
+            } else if (status === 500) {
+                // Transaction failure ya server error
+                toast.showToast("Server error occurred during submission.");
+            } else {
+                // Network issue
+                toast.showToast("Submission failed. Check your connection.");
+            }
+
+            console.log("Submit Error Detail:", e.response?.data);
+        } finally {
+            setLoading(false);
+        }
     };
 
 

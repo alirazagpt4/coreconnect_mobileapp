@@ -101,14 +101,35 @@ const ShortTesterScreen = ({ navigation }: any) => {
 
         try {
             const res = await API.post('/shorttesters/create-testers', payload);
+
             if (res.data.success) {
                 toast.showToast("Tester report submitted successfully!");
-                setTimeout(() => { navigation.goBack(); }, 2000);
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 2000);
             } else {
                 toast.showToast(res.data.message || "Something went wrong.");
             }
-        } catch (e) {
-            toast.showToast("Server connection failed.");
+        } catch (e: any) {
+            // --- LEAD ENGINEER: BACKEND STATUS MAPPING ---
+            const status = e.response?.status;
+            const serverMessage = e.response?.data?.message;
+
+            console.log("❌ Short Tester Error:", e.response?.data || e.message);
+
+            if (status === 409) {
+                // Case: Duplicate Guard (60 seconds) hit hua
+                toast.showToast(serverMessage || "Duplicate report detected. Wait 1 minute.");
+            } else if (status === 400) {
+                // Case: Khali items ya invalid data
+                toast.showToast(serverMessage || "No items selected for report.");
+            } else if (status === 500) {
+                // Case: DB Transaction fail ya master create na ho saka
+                toast.showToast("Server error: Failed to save tester report.");
+            } else {
+                // Case: Network issue
+                toast.showToast("Server connection failed. Check your internet.");
+            }
         } finally {
             setLoading(false);
         }

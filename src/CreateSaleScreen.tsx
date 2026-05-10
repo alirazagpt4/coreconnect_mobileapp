@@ -120,7 +120,6 @@ const CreateSaleScreen = ({ navigation }: any) => {
         }
 
         const payload = {
-            // Profile API se store ID uthayi
             store_id: profile?.assigned_stores?.[0]?.id || 2,
             total_amount: parseFloat(calculateGrandTotal()),
             items: cart.map(item => ({
@@ -131,39 +130,49 @@ const CreateSaleScreen = ({ navigation }: any) => {
             }))
         };
 
+        setLoading(true); // Loading start
+
         try {
             const res = await API.post('/sales/create-sale', payload);
 
             if (res.data.success) {
+                toast.showToast("Sale created successfully");
+
+                // --- RESET STATE ---
+                setCart([]);
+                setSelectedCat(null);
+                setSelectedSubCat(null);
+                setSelectedProduct(null);
+                setQuantity('');
+                setSubCategories([]);
+                setProducts([]);
+
                 setTimeout(() => {
-                    toast.showToast("Sale created successfully")
-
+                    navigation.goBack();
                 }, 2000);
-
-                // --- SAB KUCH KHALI KARO (RESET) ---
-                setCart([]);             // Cart khali ho gayi
-                setSelectedCat(null);    // Category dropdown reset
-                setSelectedSubCat(null); // Sub-category dropdown reset
-                setSelectedProduct(null);// Product dropdown reset
-                setQuantity('');         // Quantity field khali
-                setSubCategories([]);    // Sub-category ki list clear
-                setProducts([]);         // Products ki list clear
-
-                // Agar aap chahte hain screen band ho jaye:
-                setTimeout(
-                    () => {
-
-                        navigation.goBack();
-                    },
-                    2000
-                )
-
-            } else {
-                toast.showToast(res.data.message || "Something went wrong.");
             }
-        } catch (e) {
-            console.log("Sale Error:", e);
-            toast.showToast("Server not responding, try again later.");
+        } catch (e: any) {
+            // --- LEAD ENGINEER ERROR HANDLING ---
+            const status = e.response?.status;
+            const serverMessage = e.response?.data?.message;
+
+            console.log("❌ Sale Creation Error:", e.response?.data || e.message);
+
+            if (status === 409) {
+                // Idempotency: Duplicate sale within 60 seconds
+                toast.showToast(serverMessage || "Duplicate sale detected! Wait 1 minute.");
+            } else if (status === 400) {
+                // Validation: Empty items list
+                toast.showToast(serverMessage || "Item list is empty or invalid.");
+            } else if (status === 500) {
+                // DB Transaction failure
+                toast.showToast("Server error: Transaction failed. Try again.");
+            } else {
+                // Network issue
+                toast.showToast("Server not responding, try again later.");
+            }
+        } finally {
+            setLoading(false); // Loading stop
         }
     };
 

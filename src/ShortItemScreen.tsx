@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, Appbar, Button, Card, IconButton  , TextInput} from 'react-native-paper';
+import { Text, Appbar, Button, Card, IconButton, TextInput } from 'react-native-paper';
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
 import { useToast } from './context/ToastContext';
@@ -78,7 +78,7 @@ const ShortItemScreen = ({ navigation }: any) => {
         const newItem = {
             item_id: selectedProduct.id,
             product_name: selectedProduct.product_name || selectedProduct.name,
-            quantity:quantity
+            quantity: quantity
         };
         toast.showToast("Item added to list");
         setShortItemsList([...shortItemsList, newItem]);
@@ -95,8 +95,9 @@ const ShortItemScreen = ({ navigation }: any) => {
         setLoading(true);
         const payload = {
             store_id: profile?.assigned_stores?.[0]?.id || 2,
-            ba_user_id: profile?.id || 10, // Profile se ID uthayi
-            report_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+            // Backend user ID token se leta hai, lekin payload mein bhi bhej rahe ho toh theek hai
+            ba_user_id: profile?.id || 10,
+            report_date: new Date().toISOString().split('T')[0],
             items: shortItemsList.map(item => ({
                 item_id: item.item_id,
                 product_name: item.product_name,
@@ -109,19 +110,32 @@ const ShortItemScreen = ({ navigation }: any) => {
 
             if (res.data.success) {
                 toast.showToast("Short items report submitted successfully!");
-                setTimeout(
-                    () => {
-
-                        navigation.goBack();
-                    },
-                    2000
-                )
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 2000);
             } else {
                 toast.showToast(res.data.message || "Something went wrong.");
             }
-        } catch (e) {
-            console.log("Submit Error:", e);
-            toast.showToast("Server connection failed.");
+        } catch (e: any) {
+            // --- LEAD ENGINEER: BACKEND ERROR MAPPING ---
+            const status = e.response?.status;
+            const serverMessage = e.response?.data?.message;
+
+            console.log("❌ Short Item Submit Error:", e.response?.data || e.message);
+
+            if (status === 409) {
+                // Case: BA is clicking too fast (Duplicate Check)
+                toast.showToast(serverMessage || "Duplicate report! Please wait 1 minute.");
+            } else if (status === 400) {
+                // Case: Validation failure (Khali list etc)
+                toast.showToast(serverMessage || "List is empty or invalid data.");
+            } else if (status === 500) {
+                // Case: DB Transaction crash
+                toast.showToast("Server error: Could not save report.");
+            } else {
+                // Case: Network issue
+                toast.showToast("Server connection failed. Check internet.");
+            }
         } finally {
             setLoading(false);
         }

@@ -79,62 +79,50 @@ const StartDayScreen = ({ navigation }: any) => {
 
     setLoading(true);
     try {
-      // Location uthao
       const currentLoc: any = await getLocation();
-      const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false }); // 24hr format behtar hai
-      const currentDate = new Date().toISOString().split('T')[0];
+      const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
 
-      // Console mein Payload dikhana
-      console.log("--- ATTENDANCE PAYLOAD ---");
-      console.log("Image URI:", photo.uri);
-      console.log("Latitude:", currentLoc.lat);
-      console.log("Longitude:", currentLoc.lng);
-      console.log("Time:", currentTime);
-
-      // Multipart Form Data Tyari
       const formData = new FormData();
       formData.append('image', {
         uri: photo.uri,
         type: photo.type || 'image/jpeg',
-        name: photo.fileName || `attendance_${Date.now()}.jpg`,
+        name: `attendance_${Date.now()}.jpg`,
       });
-
-      formData.append('latitude', String(currentLoc.lat)); // String mein convert kiya
-      formData.append('longitude', String(currentLoc.lng)); // String mein convert kiya
+      formData.append('latitude', String(currentLoc.lat));
+      formData.append('longitude', String(currentLoc.lng));
       formData.append('time', currentTime);
       formData.append('isLeave', 'false');
 
-      // Step C: Actual API Call (Multipart Headers ke saath)
       const response = await API.post('/attendance/start-day', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Step D: Response Check (Postman response ke mutabiq)
       if (response.data.success) {
-        toast.showToast(response.data.message || "Day started successfully!");
-        // Status bhej kar wapas jayein taake buttons disable ho jayein
-        setTimeout(
-          () => {
-            navigation.navigate('MarkAttendance', { status: 'marked' });
-          },
-          2000
-        )
+        toast.showToast(response.data.message);
+        navigation.navigate('MarkAttendance', { status: 'marked' });
+      }
+    } catch (error: any) {
+      // --- LEAD ENGINEER ERROR LOGIC ---
+      const status = error.response?.status;
+      const backendMessage = error.response?.data?.message;
+
+      if (status === 409) {
+        // Case: Attendance pehle hi lag chuki hai
+        toast.showToast(backendMessage || "Today's attendance already marked!");
+        navigation.navigate('MarkAttendance', { status: 'marked' });
+      } else if (status === 400) {
+        // Case: Photo ya Location missing hai
+        toast.showToast(backendMessage || "Required data missing. Try again.");
       } else {
-        toast.showToast(response.data.message || "Something went wrong");
+        // Case: Server down ya internet masla
+        toast.showToast("Server error! Please check your internet.");
       }
 
-
-    } catch (error: any) {
-      // Error handling (Backend ya Network issue)
-      console.log("Submit Error:", error.response?.data || error.message);
-      toast.showToast(error.response?.data?.message || "Failed to connect to server");
+      console.log("❌ StartDay Error:", backendMessage);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <View style={styles.container}>
       <Appbar.Header style={{ backgroundColor: navyBlue }}>

@@ -9,6 +9,7 @@ const LoginScreen = ({ navigation }: any) => {
   const toast = useToast();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [secureText, setSecureText] = useState(true); // Password chupaane ke liye
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
 
@@ -70,9 +71,17 @@ const LoginScreen = ({ navigation }: any) => {
         value={password}
         onChangeText={setPassword}
         mode="outlined"
-        secureTextEntry
+        secureTextEntry={secureText} // State yahan use hogi
         style={styles.input}
         activeOutlineColor="#1b2142"
+        // Eye icon yahan add hoga
+        right={
+          <TextInput.Icon
+            icon={secureText ? "eye" : "eye-off"}
+            onPress={() => setSecureText(!secureText)}
+            color="#1b2142"
+          />
+        }
       />
 
       <Button

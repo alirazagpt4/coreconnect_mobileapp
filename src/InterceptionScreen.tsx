@@ -55,14 +55,11 @@ const InterceptionScreen = ({ navigation }: any) => {
             return toast.showToast("Conversions cannot be more than Interceptions");
         }
 
-        console.log("store...")
-
         const payload = {
             intercepted: intVal,
             converted: convVal,
             ratio: parseFloat(ratio),
-            store_id: profile?.assigned_stores?.[0]?.id || null, // Profile se store_id
-
+            store_id: profile?.assigned_stores?.[0]?.id || null,
         };
 
         if (!payload.store_id) {
@@ -72,21 +69,35 @@ const InterceptionScreen = ({ navigation }: any) => {
         setLoading(true);
         try {
             const res = await API.post('/interceptions/add', payload);
+
             if (res.data.success) {
                 toast.showToast("Interception saved successfully");
-                setTimeout(
-                    () => {
-
-                        navigation.goBack();
-                    },
-                    2000
-                )
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 2000);
             } else {
                 toast.showToast(res.data.message);
             }
-        } catch (e) {
-            console.log("Save Error:", e);
-            toast.showToast("Server connection failed");
+        } catch (e: any) {
+            // --- LEAD ENGINEER: BACKEND ERROR HANDLING ---
+            const status = e.response?.status;
+            const serverMessage = e.response?.data?.message;
+
+            console.log("❌ Interception Save Error:", e.response?.data || e.message);
+
+            if (status === 409) {
+                // Case: 60 Seconds Idempotency Guard Hit
+                toast.showToast(serverMessage || "Duplicate entry! Please wait 1 minute.");
+            } else if (status === 400) {
+                // Case: Validation failure from backend
+                toast.showToast(serverMessage || "Invalid data. Please check your inputs.");
+            } else if (status === 500) {
+                // Case: Database crash ya code error
+                toast.showToast("Server error: Could not save interception.");
+            } else {
+                // Case: Internet/Network failure
+                toast.showToast("Failed to connect to server. Check your internet.");
+            }
         } finally {
             setLoading(false);
         }
