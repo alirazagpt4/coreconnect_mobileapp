@@ -4,6 +4,8 @@ import { Text, Appbar, TextInput, Button, Card, List, Divider, IconButton } from
 import { Dropdown } from 'react-native-element-dropdown';
 import API from './api/API.js';
 import { useToast } from './context/ToastContext';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 const formatNumber = (num: any) => {
     if (!num) return "0";
@@ -11,6 +13,7 @@ const formatNumber = (num: any) => {
 };
 
 const CreateSaleScreen = ({ navigation }: any) => {
+    const [idempotencyKey, setIdempotencyKey] = useState(() => uuidv4());
     const toast = useToast();
     const [profile, setProfile] = useState<any>(null);
     const [categories, setCategories] = useState<any[]>([]);
@@ -121,6 +124,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
 
         const payload = {
             store_id: profile?.assigned_stores?.[0]?.id || 2,
+            idempotency_key: idempotencyKey,
             total_amount: parseFloat(calculateGrandTotal()),
             items: cart.map(item => ({
                 item_id: item.item_id,
@@ -133,7 +137,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
         setLoading(true); // Loading start
 
         try {
-            const res = await API.post('/sales/create-sale', payload);
+            const res = await API.post('/sales/create-sale-v2', payload);
 
             if (res.data.success) {
                 toast.showToast("Sale created successfully");
@@ -146,6 +150,7 @@ const CreateSaleScreen = ({ navigation }: any) => {
                 setQuantity('');
                 setSubCategories([]);
                 setProducts([]);
+                setIdempotencyKey(uuidv4());
 
                 setTimeout(() => {
                     navigation.goBack();
@@ -159,8 +164,8 @@ const CreateSaleScreen = ({ navigation }: any) => {
             console.log("❌ Sale Creation Error:", e.response?.data || e.message);
 
             if (status === 409) {
-                // Idempotency: Duplicate sale within 60 seconds
-                toast.showToast(serverMessage || "Duplicate sale detected! Wait 1 minute.");
+                // Idempotency key check
+                toast.showToast(serverMessage || "This sale was already submitted.");
             } else if (status === 400) {
                 // Validation: Empty items list
                 toast.showToast(serverMessage || "Item list is empty or invalid.");
